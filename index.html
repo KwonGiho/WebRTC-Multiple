@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+<head>
+
+  <meta charset="utf-8">
+  <meta name="description" content="WebRTC code samples">
+  <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+  <meta itemprop="description" content="Client-side WebRTC code samples">
+  <!--<meta itemprop="image" content="../../../images/webrtc-icon-192x192.png">-->
+  <meta itemprop="name" content="WebRTC code samples">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta id="theme-color" name="theme-color" content="#ffffff">
+
+  <base target="_blank">
+
+  <title>Multiple peer connections</title>
+
+  <!--<link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">-->
+  <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+  <!--<link rel="stylesheet" href="../../../css/main.css" />-->
+  <style>
+    /*
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+ */
+    .hidden {
+      display: none;
+    }
+
+    .highlight {
+      background-color: #eee;
+      font-size: 1.2em;
+      margin: 0 0 30px 0;
+      padding: 0.2em 1.5em;
+    }
+    .warning {
+      color: red;
+      font-weight: 400;
+    }
+
+    div#errorMsg p {
+      color: #F00;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      font-weight: 300;
+    }
+
+    a {
+      color: #6fa8dc;
+      font-weight: 300;
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: #3d85c6;
+      text-decoration: underline;
+    }
+
+    a#viewSource {
+      display: block;
+      margin: 1.3em 0 0 0;
+      border-top: 1px solid #999;
+      padding: 1em 0 0 0;
+    }
+
+    div#links a {
+      display: block;
+      line-height: 1.3em;
+      margin: 0 0 1.5em 0;
+    }
+
+    div.outputSelector {
+      margin: -1.3em 0 2em 0;
+    }
+
+    @media screen and (min-width: 1000px) {
+      /* hack! to detect non-touch devices */
+      div#links a {
+        line-height: 0.8em;
+      }
+    }
+
+    h1 a {
+      font-weight: 300;
+      margin: 0 10px 0 0;
+      white-space: nowrap;
+    }
+
+    audio {
+      max-width: 100%;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 1em;
+
+    }
+
+    button {
+      background-color: #d84a38;
+      border: none;
+      border-radius: 2px;
+      color: white;
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.8em;
+      margin: 0 0 1em 0;
+      padding: 0.5em 0.7em 0.6em 0.7em;
+    }
+
+    button:active {
+      background-color: #cf402f;
+    }
+
+    button:hover {
+      background-color: #cf402f;
+    }
+
+    button[disabled] {
+      color: #ccc;
+    }
+
+    button[disabled]:hover {
+      background-color: #d84a38;
+    }
+
+    canvas {
+      background-color: #ccc;
+      max-width: 100%;
+      width: 100%;
+    }
+
+    code {
+      font-family: 'Roboto', sans-serif;
+      font-weight: 400;
+    }
+
+    div#container {
+      margin: 0 auto 0 auto;
+      max-width: 40em;
+      padding: 1em 1.5em 1.3em 1.5em;
+    }
+
+    div#links {
+      padding: 0.5em 0 0 0;
+    }
+
+    h1 {
+      border-bottom: 1px solid #ccc;
+      font-family: 'Roboto', sans-serif;
+      font-weight: 500;
+      margin: 0 0 0.8em 0;
+      padding: 0 0 0.2em 0;
+    }
+
+    h2 {
+      color: #444;
+      font-size: 1em;
+      font-weight: 500;
+      line-height: 1.2em;
+      margin: 0 0 0.8em 0;
+    }
+
+    h3 {
+      border-top: 1px solid #eee;
+      color: #666;
+      font-weight: 500;
+      margin: 20px 0 10px 0;
+      padding: 10px 0 0 0;
+      white-space: nowrap;
+    }
+
+    html {
+      /* avoid annoying page width change
+      when moving from the home page */
+      overflow-y: scroll;
+    }
+
+    img {
+      border: none;
+      max-width: 100%;
+    }
+
+    input[type=radio] {
+      position: relative;
+      top: -1px;
+    }
+
+    p {
+      color: #444;
+      font-weight: 300;
+      line-height: 1.6em;
+    }
+
+    p#data {
+      border-top: 1px dotted #666;
+      font-family: Courier New, monospace;
+      line-height: 1.3em;
+      max-height: 1000px;
+      overflow-y: auto;
+      padding: 1em 0 0 0;
+    }
+
+    p.borderBelow {
+      border-bottom: 1px solid #aaa;
+      padding: 0 0 20px 0;
+    }
+
+    section p:last-of-type {
+      margin: 0;
+    }
+
+    section {
+      border-bottom: 1px solid #eee;
+      margin: 0 0 30px 0;
+      padding: 0 0 20px 0;
+    }
+
+    section:last-of-type {
+      border-bottom: none;
+      padding: 0 0 1em 0;
+    }
+
+    select {
+      margin: 0 1em 1em 0;
+      position: relative;
+      top: -1px;
+    }
+
+    h1 span {
+      white-space: nowrap;
+    }
+
+    strong {
+      font-weight: 500;
+    }
+
+    textarea {
+      font-family: 'Roboto', sans-serif;
+    }
+
+    video {
+      background: #222;
+      margin: 0 0 20px 0;
+      width: 100%;
+    }
+
+    @media screen and (max-width: 650px) {
+      .highlight {
+        font-size: 1em;
+        margin: 0 0 20px 0;
+        padding: 0.2em 1em;
+      }
+      h1 {
+        font-size: 24px;
+      }
+    }
+
+    @media screen and (max-width: 550px) {
+      button:active {
+        background-color: darkRed;
+      }
+      h1 {
+        font-size: 22px;
+      }
+    }
+
+    @media screen and (max-width: 450px) {
+      h1 {
+        font-size: 20px;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="css/main.css" />
+
+</head>
+
+<body>
+
+  <div id="container">
+
+    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Multiple peer connections</span></h1>
+
+    <video id="video1" autoplay muted></video>
+    <video id="video2" autoplay></video>
+    <video id="video3" autoplay></video>
+
+
+    <div>
+      <button id="startButton">Start</button>
+      <button id="callButton">Call</button>
+      <button id="hangupButton">Hang Up</button>
+    </div>
+
+    <p>View the console to see logging and to inspect the <code>MediaStream</code> object <code>localStream</code>.</p>
+
+    <p>For more information about RTCPeerConnection, see <a href="http://www.html5rocks.com/en/tutorials/webrtc/basics/" title="HTML5 Rocks article about WebRTC by Sam Dutton">Getting Started With WebRTC</a>.</p>
+
+
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/peerconnection/multiple" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+
+  </div>
+
+  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+  <!--<script src="../../../js/common.js"></script>-->
+  <script>
+      // Logging utility function.
+      function trace(arg) {
+          var now = (window.performance.now() / 1000).toFixed(3);
+          console.log(now + ': ', arg);
+      }
+  </script>
+
+
+
+  <script src="js/main.js"></script>
+
+  <!--<script src="../../../js/lib/ga.js"></script>-->
+
+</body>
+</html>
