@@ -18,8 +18,10 @@ callButton.onclick = call;
 hangupButton.onclick = hangup;
 
 
-var videos = [];
+let localCount = 0;
+let remoteCount = 0;
 
+var videos = [];
 
 var pcLocals = [];
 var pcRemotes = [];
@@ -27,6 +29,7 @@ var offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 1
 };
+start();
 
 function gotStream(stream) {
   trace('Received local stream');
@@ -47,6 +50,7 @@ function start() {
   .catch(function(e) {
     console.log('getUserMedia() error: ', e);
   });
+    setTimeout(()=>{call()}, 1000);
 }
 
 function call() {
@@ -64,19 +68,20 @@ function call() {
     trace('Using video device: ' + videoTracks[0].label);
   }
   // Create an RTCPeerConnection via the polyfill.
-  var servers = null;
-  pcLocals.push(new RTCPeerConnection(servers));
-  pcRemotes.push(new RTCPeerConnection(servers));
+    //var servers = "http://192.168.0.17";
+    var servers = null;
+  pcLocals.push(new RTCPeerConnection());
+  pcRemotes.push(new RTCPeerConnection());
   pcRemotes[0].ontrack = gotRemoteStream1;
   pcLocals[0].onicecandidate = iceCallback1Local;
-  pcRemotes[0].onicecandidate = iceCallback1Remote;
+  pcRemotes[0].onicecandidate = iceCallbackRemoteGeneral;
   trace('pc1: created local and remote peer connection objects');
 
-    pcLocals.push(new RTCPeerConnection(servers));
-    pcRemotes.push(new RTCPeerConnection(servers));
+    pcLocals.push(new RTCPeerConnection());
+    pcRemotes.push(new RTCPeerConnection());
     pcRemotes[1].ontrack = gotRemoteStream2;
     pcLocals[1].onicecandidate = iceCallback2Local;
-    pcRemotes[1].onicecandidate = iceCallback2Remote;
+    pcRemotes[1].onicecandidate = iceCallbackRemoteGeneral;
   trace('pc2: created local and remote peer connection objects');
 
   window.localStream.getTracks().forEach(
@@ -182,22 +187,34 @@ function gotRemoteStream2(e) {
     trace('pc2: received remote stream');
   }
 }
-
+function iceCallbackRemoteGeneral(event) {
+    handleCandidate(event.candidate, pcRemotes[remoteCount++], 'pc1: ', 'local');
+}
+function iceCallbackLocalGeneral(event) {
+    handleCandidate(event.candidate, pcRemotes[localCount++], 'pc1: ', 'local');
+}
 function iceCallback1Local(event) {
+    console.log(event);
+    console.log(pcRemotes[0]);
+    console.log(event==pcRemotes[0]);
+    console.log(event.srcElement);
+
   handleCandidate(event.candidate, pcRemotes[0], 'pc1: ', 'local');
 }
 
-function iceCallback1Remote(event) {
-  handleCandidate(event.candidate, pcLocals[0], 'pc1: ', 'remote');
-}
+// function iceCallback1Remote(event) {
+//   handleCandidate(event.candidate, pcLocals[0], 'pc1: ', 'remote');
+// }
 
 function iceCallback2Local(event) {
+    // console.log(event.target==pcRemotes[1]);
+    // console.log(event);
   handleCandidate(event.candidate, pcRemotes[1], 'pc2: ', 'local');
 }
 
-function iceCallback2Remote(event) {
-  handleCandidate(event.candidate, pcLocals[1], 'pc2: ', 'remote');
-}
+// function iceCallback2Remote(event) {
+//   handleCandidate(event.candidate, pcLocals[1], 'pc2: ', 'remote');
+// }
 
 function handleCandidate(candidate, dest, prefix, type) {
   dest.addIceCandidate(candidate)
