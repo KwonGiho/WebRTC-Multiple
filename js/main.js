@@ -17,16 +17,9 @@ startButton.onclick = start;
 callButton.onclick = call;
 hangupButton.onclick = hangup;
 
-// var video1 = document.querySelector('video#video1');
-// var video2 = document.querySelector('video#video2');
-// var video3 = document.querySelector('video#video3');
 
 var videos = [];
 
-// var pc1Local;
-// var pc1Remote;
-// var pc2Local;
-// var pc2Remote;
 
 var pcLocals = [];
 var pcRemotes = [];
