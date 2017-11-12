@@ -51,30 +51,17 @@ function start() {
 }
 
 function call() {
-    videos.push(document.querySelector('video#video2'));
-    videos.push(document.querySelector('video#video3'));
-    videos.push(document.querySelector('video#video4'));
+    let video = document.querySelector('#video');
+    let newVideo = undefined;
+    for(let i=0;i<5;i++) {
+        newVideo = document.createElement("video");
+        videos.push(newVideo);
+        video.appendChild(newVideo);
+        pcLocals.push(new RTCPeerConnection());
+        pcRemotes.push(new RTCPeerConnection());
+    }
     callButton.disabled = true;
     hangupButton.disabled = false;
-    // trace('Starting calls');
-    // var audioTracks = window.localStream.getAudioTracks();
-    // var videoTracks = window.localStream.getVideoTracks();
-    // if (audioTracks.length > 0) {
-    //     trace('Using audio device: ' + audioTracks[0].label);
-    // }
-    // if (videoTracks.length > 0) {
-    //     trace('Using video device: ' + videoTracks[0].label);
-    // }
-
-
-    pcLocals.push(new RTCPeerConnection());
-    pcRemotes.push(new RTCPeerConnection());
-
-    pcLocals.push(new RTCPeerConnection());
-    pcRemotes.push(new RTCPeerConnection());
-
-    pcLocals.push(new RTCPeerConnection());
-    pcRemotes.push(new RTCPeerConnection());
 
 
     pcRemotes.forEach( (v,i)=>
@@ -88,27 +75,23 @@ function call() {
 
 
     // instead of ontrack = gotRemoteStream1 ,gotRemoteStream2
-    pcRemotes.forEach( (v,i)=> {
-        v.ontrack= (e)=>{
-            if (videos[i+1].srcObject !== e.streams[0]) {
+    pcRemotes.forEach( (v,i)=> v.ontrack = (e)=>{
+            if (videos[i+1].srcObject !== e.streams[0])
                 videos[i+1].srcObject = e.streams[0];
-                trace('pc1: received remote stream');
-            }
-        }
-    });
-
-    window.localStream.getTracks().forEach(
-        function(track) {
-            pcLocals.forEach( (v,i)=> {
-                v.addTrack(
-                    track,
-                    window.localStream
-                );
-            });
         }
     );
 
-    pcLocals.forEach( (v,i) => {
+    window.localStream.getTracks().forEach(
+        (track,i) =>
+            pcLocals.forEach( (v,i)=>
+                v.addTrack(
+                    track,
+                    window.localStream
+                )
+            )
+    );
+
+    pcLocals.forEach( (v,i) =>
         v.createOffer(
             offerOptions
         ).then(
@@ -125,8 +108,8 @@ function call() {
                 );
             },
             onCreateSessionDescriptionError
-        );
-    });
+        )
+    );
 }
 
 function onCreateSessionDescriptionError(error) {
